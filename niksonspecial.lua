@@ -265,4 +265,13 @@ VisualsTab:AddToggle({
 -- Add NoClip toggle under 'MiscTab'
 local MiscTab = Window:MakeTab({
     Name = "Misc",
-    Icon = "rbxassetid
+    Icon = "rbxassetid://10472045394",
+})
+
+MiscTab:AddToggle({
+    Name = "Toggle NoClip",
+    Default = false,
+    Callback = function(Value)
+        ToggleNoClip()
+    end,
+})
