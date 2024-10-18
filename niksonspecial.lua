@@ -1,14 +1,15 @@
 -- Vytvoření ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "N1ks0nMenu"
+screenGui.ResetOnSpawn = false  -- Zajišťuje, že GUI zůstane i po respawnu hráče
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-screenGui.Enabled = false  -- Menu je zpočátku skryté
 
 -- Vytvoření Frame pro menu
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 400)
-frame.Position = UDim2.new(0.5, -100, 0.5, -200)
+frame.Size = UDim2.new(0, 200, 0, 400)  -- Šířka 200, výška 400 pixelů
+frame.Position = UDim2.new(0.5, -100, 0.5, -200)  -- Uprostřed obrazovky
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Visible = false  -- Menu je na začátku skryté
 frame.Parent = screenGui
 
 -- Vytvoření názvu menu
@@ -123,13 +124,14 @@ end
 
 trackButton.MouseButton1Click:Connect(toggleTracking)
 
--- Funkce pro otevření/zavření menu
-local menuOpen = false
+-- Funkce pro otevření/zavření menu pomocí klávesy M
 local userInputService = game:GetService("UserInputService")
+local menuOpen = false
 
 userInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.RightShift then
+    if input.KeyCode == Enum.KeyCode.M then
         menuOpen = not menuOpen
         screenGui.Enabled = menuOpen
+        frame.Visible = menuOpen
     end
 end)
