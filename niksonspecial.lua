@@ -1,6 +1,5 @@
--- Vytvoření ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "N1ks0nMenu"
+screenGui.Name = "NixMenu"
 screenGui.ResetOnSpawn = false  -- Zajišťuje, že GUI zůstane i po respawnu hráče
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
@@ -14,7 +13,7 @@ frame.Parent = screenGui
 
 -- Vytvoření názvu menu
 local title = Instance.new("TextLabel")
-title.Text = "N1ks0n Menu"
+title.Text = "NixMenu"
 title.Size = UDim2.new(1, 0, 0, 50)
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
