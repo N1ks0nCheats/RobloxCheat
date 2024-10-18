@@ -4,7 +4,7 @@ local Window = OrionLib:MakeWindow({
     Name = "Nix Menu",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "Nix Menu",
+    ConfigFolder = "Krt Hub",
     IntroEnabled = true,
     IntroText = "Nix | Loader",
     IntroIcon = "rbxassetid://10472045394",
@@ -21,17 +21,12 @@ local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 local ESPEnabled = false
 local ChamsEnabled = false
+local NoClipEnabled = false  -- Variable for NoClip
 local highlightColor = Color3.fromRGB(255, 48, 51)
 local espBoxes = {}
 local chamsHighlights = {} -- Initialize chamsHighlights
 local chamsThread = nil
 local espThread = nil
-
--- NoClip Variables
-local NoClipEnabled = false
-local Flying = false
-local Velocity = Vector3.new(0, 0, 0)
-local speed = 50 -- Létání rychlost
 
 -- Function to create a highlight for a player (Chams)
 local function ApplyChams(Player)
@@ -149,48 +144,71 @@ local function StartESPThread()
     end)
 end
 
--- Function to enable/disable NoClip
-local function ToggleNoClip()
+-- Function to activate NoClip
+local function toggleNoClip()
     NoClipEnabled = not NoClipEnabled
-    if NoClipEnabled then
-        -- Activate NoClip
-        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-        for _, part in pairs(Character:GetChildren()) do
+    
+    local Character = LocalPlayer.Character
+    if Character and Character:FindFirstChild("Humanoid") then
+        local humanoid = Character:FindFirstChild("Humanoid")
+        humanoid:ChangeState(NoClipEnabled and Enum.HumanoidStateType.Physics or Enum.HumanoidStateType.GettingUp)
+        if NoClipEnabled then
+            humanoid.PlatformStand = true
+        else
+            humanoid.PlatformStand = false
+        end
+
+        -- Make the character's parts non-collidable when NoClip is enabled
+        for _, part in ipairs(Character:GetChildren()) do
             if part:IsA("BasePart") then
-                part.CanCollide = false
+                part.CanCollide = not NoClipEnabled
             end
         end
-        Flying = true
-    else
-        -- Deactivate NoClip
-        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        for _, part in pairs(Character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-        Flying = false
     end
 end
 
--- Function to handle flying behavior
-local function Fly()
-    if Flying then
-        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-        local Mouse = LocalPlayer:GetMouse()
+-- Correctly creating the Visual, Aim, Misc, and Teleport tabs
+local VisualsTab = Window:MakeTab({
+    Name = "Visuals",
+    Icon = "rbxassetid://10472045394",
+})
 
-        if HumanoidRootPart then
-            -- Update velocity and position
-            Velocity = Velocity * 0.8
-            local moveDirection = (Mouse.Hit.p - HumanoidRootPart.Position).unit * speed
-            Velocity = Velocity + moveDirection
-            HumanoidRootPart.Velocity = Velocity
-            HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + HumanoidRootPart.Velocity * RunService.Heartbeat:Wait()
+-- Chams toggle
+VisualsTab:AddToggle({
+    Name = "Toggle Chams",
+    Default = false,
+    Callback = function(Value)
+        ChamsEnabled = Value
+        if ChamsEnabled then
+            StartChamsThread()
+        else
+            RemoveAllChams()
         end
-    end
-end
+    end,
+})
+
+-- ESP toggle
+VisualsTab:AddToggle({
+    Name = "Toggle ESP Boxes",
+    Default = false,
+    Callback = function(Value)
+        ESPEnabled = Value
+        if ESPEnabled then
+            StartESPThread()
+        else
+            RemoveAllESPBoxes()
+        end
+    end,
+})
+
+-- NoClip toggle
+VisualsTab:AddToggle({
+    Name = "Toggle NoClip",
+    Default = false,
+    Callback = function(Value)
+        toggleNoClip()  -- Toggle NoClip functionality
+    end,
+})
 
 -- Key bindings for menu toggling and ESP toggle
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -198,11 +216,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         -- Toggle the Orion window with 'F'
         if input.KeyCode == Enum.KeyCode.F then
             Window:Toggle()  -- Toggle Orion window
-        end
-
-        -- Toggle NoClip (Flying) with 'E'
-        if input.KeyCode == Enum.KeyCode.E then
-            ToggleNoClip()
         end
     end
 end)
@@ -220,58 +233,3 @@ Players.PlayerAdded:Connect(function(Player)
         ApplyChams(Player)
     end)
 end)
-
--- Run the Fly function if NoClip is enabled
-RunService.Heartbeat:Connect(function()
-    if Flying then
-        Fly()
-    end
-end)
-
--- Correctly creating the Visual, Aim, Misc, and Teleport tabs
-local VisualsTab = Window:MakeTab({
-    Name = "Visuals",
-    Icon = "rbxassetid://10472045394",
-})
-
--- Add Chams toggle under the correct 'VisualsTab'
-VisualsTab:AddToggle({
-    Name = "Toggle Chams",
-    Default = false,
-    Callback = function(Value)
-        ChamsEnabled = Value
-        if ChamsEnabled then
-            StartChamsThread()  -- Start the thread to continuously update Chams
-        else
-            RemoveAllChams()  -- Clean up Chams when disabled
-        end
-    end,
-})
-
--- Add ESP toggle under 'VisualsTab'
-VisualsTab:AddToggle({
-    Name = "Toggle ESP Boxes",
-    Default = false,
-    Callback = function(Value)
-        ESPEnabled = Value
-        if ESPEnabled then
-            StartESPThread()  -- Start the thread to continuously update ESP
-        else
-            RemoveAllESPBoxes()  -- Clean up ESP when disabled
-        end
-    end,
-})
-
--- Add NoClip toggle under 'MiscTab'
-local MiscTab = Window:MakeTab({
-    Name = "Misc",
-    Icon = "rbxassetid://10472045394",
-})
-
-MiscTab:AddToggle({
-    Name = "Toggle NoClip",
-    Default = false,
-    Callback = function(Value)
-        ToggleNoClip()
-    end,
-})
