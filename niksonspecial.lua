@@ -27,6 +27,12 @@ local chamsHighlights = {} -- Initialize chamsHighlights
 local chamsThread = nil
 local espThread = nil
 
+-- NoClip Variables
+local NoClipEnabled = false
+local Flying = false
+local Velocity = Vector3.new(0, 0, 0)
+local speed = 50 -- Létání rychlost
+
 -- Function to create a highlight for a player (Chams)
 local function ApplyChams(Player)
     local Character = Player.Character or Player.CharacterAdded:Wait()
@@ -143,39 +149,48 @@ local function StartESPThread()
     end)
 end
 
--- Correctly creating the Visual, Aim, Misc, and Teleport tabs
-local VisualsTab = Window:MakeTab({
-    Name = "Visuals",
-    Icon = "rbxassetid://10472045394",
-})
-
--- Ensure we add Chams toggle under the correct 'VisualsTab'
-VisualsTab:AddToggle({
-    Name = "Toggle Chams",
-    Default = false,
-    Callback = function(Value)
-        ChamsEnabled = Value
-        if ChamsEnabled then
-            StartChamsThread()  -- Start the thread to continuously update Chams
-        else
-            RemoveAllChams()  -- Clean up Chams when disabled
+-- Function to enable/disable NoClip
+local function ToggleNoClip()
+    NoClipEnabled = not NoClipEnabled
+    if NoClipEnabled then
+        -- Activate NoClip
+        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+        for _, part in pairs(Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
         end
-    end,
-})
-
--- Ensure ESP is under 'VisualsTab'
-VisualsTab:AddToggle({
-    Name = "Toggle ESP Boxes",
-    Default = false,
-    Callback = function(Value)
-        ESPEnabled = Value
-        if ESPEnabled then
-            StartESPThread()  -- Start the thread to continuously update ESP
-        else
-            RemoveAllESPBoxes()  -- Clean up ESP when disabled
+        Flying = true
+    else
+        -- Deactivate NoClip
+        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        for _, part in pairs(Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
         end
-    end,
-})
+        Flying = false
+    end
+end
+
+-- Function to handle flying behavior
+local function Fly()
+    if Flying then
+        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+        local Mouse = LocalPlayer:GetMouse()
+
+        if HumanoidRootPart then
+            -- Update velocity and position
+            Velocity = Velocity * 0.8
+            local moveDirection = (Mouse.Hit.p - HumanoidRootPart.Position).unit * speed
+            Velocity = Velocity + moveDirection
+            HumanoidRootPart.Velocity = Velocity
+            HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + HumanoidRootPart.Velocity * RunService.Heartbeat:Wait()
+        end
+    end
+end
 
 -- Key bindings for menu toggling and ESP toggle
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -183,6 +198,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         -- Toggle the Orion window with 'F'
         if input.KeyCode == Enum.KeyCode.F then
             Window:Toggle()  -- Toggle Orion window
+        end
+
+        -- Toggle NoClip (Flying) with 'E'
+        if input.KeyCode == Enum.KeyCode.E then
+            ToggleNoClip()
         end
     end
 end)
@@ -200,3 +220,49 @@ Players.PlayerAdded:Connect(function(Player)
         ApplyChams(Player)
     end)
 end)
+
+-- Run the Fly function if NoClip is enabled
+RunService.Heartbeat:Connect(function()
+    if Flying then
+        Fly()
+    end
+end)
+
+-- Correctly creating the Visual, Aim, Misc, and Teleport tabs
+local VisualsTab = Window:MakeTab({
+    Name = "Visuals",
+    Icon = "rbxassetid://10472045394",
+})
+
+-- Add Chams toggle under the correct 'VisualsTab'
+VisualsTab:AddToggle({
+    Name = "Toggle Chams",
+    Default = false,
+    Callback = function(Value)
+        ChamsEnabled = Value
+        if ChamsEnabled then
+            StartChamsThread()  -- Start the thread to continuously update Chams
+        else
+            RemoveAllChams()  -- Clean up Chams when disabled
+        end
+    end,
+})
+
+-- Add ESP toggle under 'VisualsTab'
+VisualsTab:AddToggle({
+    Name = "Toggle ESP Boxes",
+    Default = false,
+    Callback = function(Value)
+        ESPEnabled = Value
+        if ESPEnabled then
+            StartESPThread()  -- Start the thread to continuously update ESP
+        else
+            RemoveAllESPBoxes()  -- Clean up ESP when disabled
+        end
+    end,
+})
+
+-- Add NoClip toggle under 'MiscTab'
+local MiscTab = Window:MakeTab({
+    Name = "Misc",
+    Icon = "rbxassetid
