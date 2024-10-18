@@ -1,5 +1,6 @@
+-- Vytvoření ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "NixMenu"
+screenGui.Name = "N1ks0nMenu"
 screenGui.ResetOnSpawn = false  -- Zajišťuje, že GUI zůstane i po respawnu hráče
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
@@ -8,12 +9,12 @@ local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 200, 0, 400)  -- Šířka 200, výška 400 pixelů
 frame.Position = UDim2.new(0.5, -100, 0.5, -200)  -- Uprostřed obrazovky
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-frame.Visible = false  -- Menu je na začátku skryté
+frame.Visible = true  -- Zajistíme, že bude viditelný při zobrazení GUI
 frame.Parent = screenGui
 
 -- Vytvoření názvu menu
 local title = Instance.new("TextLabel")
-title.Text = "NixMenu"
+title.Text = "N1ks0n Menu"
 title.Size = UDim2.new(1, 0, 0, 50)
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -112,25 +113,4 @@ local function toggleTracking()
             if player.Character and player ~= game.Players.LocalPlayer then
                 local head = player.Character:FindFirstChild("Head")
                 
-                if head and head:FindFirstChildOfClass("BillboardGui") then
-                    head:FindFirstChildOfClass("BillboardGui"):Destroy()
-                end
-            end
-        end
-        trackButton.Text = "Enable Player Tracking"
-    end
-end
-
-trackButton.MouseButton1Click:Connect(toggleTracking)
-
--- Funkce pro otevření/zavření menu pomocí klávesy M
-local userInputService = game:GetService("UserInputService")
-local menuOpen = false
-
-userInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.M then
-        menuOpen = not menuOpen
-        screenGui.Enabled = menuOpen
-        frame.Visible = menuOpen
-    end
-end)
+                if head and head:FindFirstChildOfClass
