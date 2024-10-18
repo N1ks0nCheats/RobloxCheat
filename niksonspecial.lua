@@ -126,7 +126,7 @@ trackButton.MouseButton1Click:Connect(toggleTracking)
 
 -- Funkce pro otevření/zavření menu pomocí klávesy M
 local userInputService = game:GetService("UserInputService")
-local menuOpen = false
+local menuOpen = true
 
 userInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.M then
